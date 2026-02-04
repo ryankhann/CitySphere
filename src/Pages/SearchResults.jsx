@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { cityData } from '../Data/CityData';
+import { CityData } from '../Data/CityData';
 import { categories } from '../Data/categories';
 
 const SearchResults = ({ query: propQuery }) => {
