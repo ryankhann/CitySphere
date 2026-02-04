@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import Home from './Pages/Home';
 import SearchResults from './Pages/SearchResults';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Navbar from './Components/Navbar';
+import Footer from './Components/Footer';
 
 // Explore Pages
 import Advertise from './Pages/Advertise';
