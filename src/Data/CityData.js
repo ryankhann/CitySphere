@@ -1,4 +1,4 @@
-export const cityData = {
+export const CityData = {
   businesses: [
     { id: 1, name: "Downtown Bistro", category: "restaurant", rating: 4.7, tags: ["fine-dining", "wine", "romantic"] },
     { id: 2, name: "Central Park", category: "park", rating: 4.9, tags: ["nature", "picnic", "family-friendly"] },
