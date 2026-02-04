@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../api';
 
 const Signup = () => {
   const [step, setStep] = useState(1);
@@ -84,7 +85,7 @@ const Signup = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -124,7 +125,7 @@ const Signup = () => {
       setIsLoading(true);
       
       try {
-        const response = await fetch('http://localhost:5000/api/auth/verify', {
+        const response = await fetch('fetch(`${API_URL}/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -158,7 +159,7 @@ const Signup = () => {
   const handleResendCode = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/resend-code', {
+      const response = await fetch(`${API_URL}/resend-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
