@@ -1,47 +1,47 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
-import Home from './Pages/Home';
-import SearchResults from './Pages/SearchResults';
-import Navbar from './Components/Navbar';
-import Footer from './Components/Footer';
+import Home from './pages/Home';
+import SearchResults from './pages/SearchResults';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 // Explore Pages
-import Advertise from './Pages/Advertise';
-import Login from './Pages/Login';
-import Signup from './Pages/Signup';
-import Submit from './Pages/Submit';
-import Attractions from './Pages/Explore/Attractions';
-import Landmarks from './Pages/Explore/Landmarks';
-import ParksRecreation from './Pages/Explore/ParksRecreation';
-import MuseumsGalleries from './Pages/Explore/MuseumsGalleries';
-import Downtown from './Pages/Explore/Neighborhoods/Downtown';
-import OldTown from './Pages/Explore/Neighborhoods/OldTown';
-import Waterfront from './Pages/Explore/Neighborhoods/Waterfront';
-import UptownDistrict from './Pages/Explore/Neighborhoods/UptownDistrict';
+import Advertise from './pages/Advertise';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Submit from './pages/Submit';
+import Attractions from './pages/explore/Attractions';
+import Landmarks from './pages/explore/Landmarks';
+import ParksRecreation from './pages/explore/ParksRecreation';
+import MuseumsGalleries from './pages/explore/MuseumsGalleries';
+import Downtown from './pages/explore/neighborhoods/Downtown';
+import OldTown from './pages/explore/neighborhoods/OldTown';
+import Waterfront from './pages/explore/neighborhoods/Waterfront';
+import UptownDistrict from './pages/explore/neighborhoods/UptownDistrict';
 
 // Events Pages
-import TodaysEvents from './Pages/Events/TodaysEvents';
-import ThisWeekend from './Pages/Events/ThisWeekend';
-import Festivals from './Pages/Events/Festivals';
-import Concerts from './Pages/Events/Concerts';
-import Sports from './Pages/Events/Sports';
+import TodaysEvents from './pages/events/TodaysEvents';
+import ThisWeekend from './pages/events/ThisWeekend';
+import Festivals from './pages/events/Festivals';
+import Concerts from './pages/events/Concerts';
+import Sports from './pages/events/Sports';
 
 // Dining Pages
-import Restaurants from './Pages/Dining/Restaurants';
-import CafesBakeries from './Pages/Dining/CafesBakeries';
-import BarsPubs from './Pages/Dining/BarsPubs';
-import FoodTrucks from './Pages/Dining/FoodTrucks';
+import Restaurants from './pages/dining/Restaurants';
+import CafesBakeries from './pages/dining/CafesBakeries';
+import BarsPubs from './pages/dining/BarsPubs';
+import FoodTrucks from './pages/dining/FoodTrucks';
 
 // News Pages
-import LocalNews from './Pages/News/LocalNews';
-import CommunityUpdates from './Pages/News/CommunityUpdates';
-import BusinessOpenings from './Pages/News/BusinessOpenings';
+import LocalNews from './pages/news/LocalNews';
+import CommunityUpdates from './pages/news/CommunityUpdates';
+import BusinessOpenings from './pages/News/BusinessOpenings';
 
 // Best-Of Pages
-import TopAttractions from './Pages/Best-Of/TopAttractions';
-import BestRestaurants from './Pages/Best-Of/BestRestaurants';
-import HiddenGems from './Pages/Best-Of/HiddenGems';
+import TopAttractions from './pages/best-of/TopAttractions';
+import BestRestaurants from './pages/best-of/BestRestaurants';
+import HiddenGems from './pages/best-of/HiddenGems';
 
 import './index.css';
 

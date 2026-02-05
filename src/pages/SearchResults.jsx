@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CityData } from '../Data/CityData';
-import { categories } from '../Data/categories';
+import { CityData } from '../data/CityData';
+import { categories } from '../data/categories';
 
 const SearchResults = ({ query: propQuery }) => {
   const location = useLocation();
@@ -29,14 +29,14 @@ const SearchResults = ({ query: propQuery }) => {
       const searchTerm = query.toLowerCase().trim();
       
       // Search in businesses
-      const businessResults = cityData.businesses.filter(item =>
+      const businessResults = CityData.businesses.filter(item =>
         item.name.toLowerCase().includes(searchTerm) ||
         item.category.toLowerCase().includes(searchTerm) ||
         item.tags.some(tag => tag.toLowerCase().includes(searchTerm))
       ).map(business => ({ ...business, type: 'business' }));
 
       // Search in events
-      const eventResults = cityData.events.filter(item =>
+      const eventResults = CityData.events.filter(item =>
         item.name.toLowerCase().includes(searchTerm) ||
         item.category.toLowerCase().includes(searchTerm) ||
         item.location.toLowerCase().includes(searchTerm)

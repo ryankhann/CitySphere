@@ -164,7 +164,7 @@ console.log('Navbar user:', user);
       ]
     },
     {
-      id: 'bestof',
+      id: 'best-of',
       label: 'Best Of',
       hasDropdown: true,
       items: [
