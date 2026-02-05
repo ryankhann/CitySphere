@@ -36,7 +36,7 @@ import FoodTrucks from './pages/dining/FoodTrucks';
 // News Pages
 import LocalNews from './pages/news/LocalNews';
 import CommunityUpdates from './pages/news/CommunityUpdates';
-import BusinessOpenings from './pages/News/BusinessOpenings';
+import BusinessOpenings from './pages/news/BusinessOpenings';
 
 // Best-Of Pages
 import TopAttractions from './pages/best-of/TopAttractions';
