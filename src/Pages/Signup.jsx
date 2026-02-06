@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../api';
 
@@ -18,71 +18,39 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
+  // Step 1 validation (signup form)
   const validateStep1 = () => {
     const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Step 2 validation (verification code)
   const validateStep2 = () => {
     const newErrors = {};
-
-    if (!formData.verificationCode.trim()) {
-      newErrors.verificationCode = 'Verification code is required';
-    } else if (formData.verificationCode.length !== 6) {
-      newErrors.verificationCode = 'Code must be 6 digits';
-    }
+    if (!formData.verificationCode.trim()) newErrors.verificationCode = 'Verification code is required';
+    else if (formData.verificationCode.length !== 6) newErrors.verificationCode = 'Code must be 6 digits';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Send verification code (signup)
   const handleSendCode = async () => {
-    if (!formData.email) {
-      setErrors({ email: 'Email is required to send code' });
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setErrors({ email: 'Please enter a valid email' });
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/signup`, {
@@ -96,7 +64,7 @@ const Signup = () => {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send verification code');
       }
@@ -104,23 +72,23 @@ const Signup = () => {
       setIsLoading(false);
       setCodeSent(true);
 
-      // ✅ Updated alert logic
+      // Only show demo code if email failed
       if (data.verificationCode) {
-        // Email failed, show demo code
-        alert(`Email failed. Demo verification code: ${data.verificationCode}`);
+        alert(`Email failed to send. Demo code: ${data.verificationCode}`);
       } else {
-        // Email sent successfully
         alert(`Verification code sent to ${formData.email}. Check your inbox.`);
       }
+
     } catch (error) {
       setIsLoading(false);
       setErrors({ email: error.message });
     }
   };
 
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (step === 1) {
       if (validateStep1()) {
         await handleSendCode();
@@ -129,9 +97,9 @@ const Signup = () => {
       return;
     }
 
+    // Step 2: verify code
     if (validateStep2()) {
       setIsLoading(true);
-      
       try {
         const response = await fetch(`${API_URL}/verify`, {
           method: 'POST',
@@ -143,14 +111,10 @@ const Signup = () => {
         });
 
         const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.error || 'Verification failed');
-        }
 
-        // Login the user after verification
+        if (!response.ok) throw new Error(data.error || 'Verification failed');
+
         login(data.user, data.token);
-        
         alert('Account created successfully!');
         navigate('/');
       } catch (error) {
@@ -160,10 +124,10 @@ const Signup = () => {
     }
   };
 
-  const handleBack = () => {
-    setStep(1);
-  };
+  // Go back to step 1
+  const handleBack = () => setStep(1);
 
+  // Resend verification code
   const handleResendCode = async () => {
     setIsLoading(true);
     try {
@@ -174,16 +138,13 @@ const Signup = () => {
       });
 
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to resend code');
-      }
 
-      // ✅ Updated alert logic
+      if (!response.ok) throw new Error(data.error || 'Failed to resend code');
+
       if (data.verificationCode) {
-        alert(`Email failed. Demo verification code: ${data.verificationCode}`);
+        alert(`Email failed to send. Demo code: ${data.verificationCode}`);
       } else {
-        alert(`New code sent to ${formData.email}. Check your inbox.`);
+        alert('New verification code sent! Check your inbox.');
       }
     } catch (error) {
       setErrors({ verificationCode: error.message });
