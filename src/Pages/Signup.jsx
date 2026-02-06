@@ -17,7 +17,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
@@ -44,6 +44,7 @@ const Signup = () => {
   };
 
   const handleSendCode = async () => {
+    if (!validateStep1()) return;
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/signup`, {
@@ -56,49 +57,47 @@ const Signup = () => {
         })
       });
       const data = await response.json();
-      setIsLoading(false);
-
       if (!response.ok) throw new Error(data.error || 'Failed to send verification code');
 
-      if (data.verificationCode) {
-        // Email failed, show demo code
-        alert(`Email failed. Demo code: ${data.verificationCode}`);
-      } else {
-        alert(`Verification code sent to ${formData.email}. Check your inbox.`);
-      }
-
-      setStep(2);
-    } catch (error) {
       setIsLoading(false);
-      setErrors({ email: error.message });
+      setStep(2);
+      alert(`Verification code sent to ${formData.email}. Check your inbox.`);
+      if (data.verificationCode) {
+        console.log(`Demo code (email failed): ${data.verificationCode}`);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setErrors({ email: err.message });
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (step === 1) {
-      if (validateStep1()) handleSendCode();
+      await handleSendCode();
       return;
     }
-    if (validateStep2()) {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`${API_URL}/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email, code: formData.verificationCode })
-        });
-        const data = await response.json();
-        setIsLoading(false);
-        if (!response.ok) throw new Error(data.error || 'Verification failed');
+    if (!validateStep2()) return;
 
-        login(data.user, data.token);
-        alert('Account created successfully!');
-        navigate('/');
-      } catch (error) {
-        setIsLoading(false);
-        setErrors({ verificationCode: error.message });
-      }
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          code: formData.verificationCode
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Verification failed');
+
+      login(data.user, data.token);
+      alert('Account created successfully!');
+      navigate('/');
+    } catch (err) {
+      setIsLoading(false);
+      setErrors({ verificationCode: err.message });
     }
   };
 
@@ -111,19 +110,17 @@ const Signup = () => {
         body: JSON.stringify({ email: formData.email })
       });
       const data = await response.json();
-      setIsLoading(false);
       if (!response.ok) throw new Error(data.error || 'Failed to resend code');
 
-      if (data.verificationCode) {
-        alert(`Email failed. Demo code: ${data.verificationCode}`);
-      } else {
-        alert(`New verification code sent. Check your inbox.`);
-      }
-    } catch (error) {
+      alert(`New code sent! Check your inbox.`);
+      if (data.verificationCode) console.log(`Demo code (email failed): ${data.verificationCode}`);
+    } catch (err) {
+      setErrors({ verificationCode: err.message });
+    } finally {
       setIsLoading(false);
-      setErrors({ verificationCode: error.message });
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
