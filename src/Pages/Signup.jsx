@@ -14,18 +14,15 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  // Step 1 validation (signup form)
   const validateStep1 = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
@@ -34,22 +31,18 @@ const Signup = () => {
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Step 2 validation (verification code)
   const validateStep2 = () => {
     const newErrors = {};
     if (!formData.verificationCode.trim()) newErrors.verificationCode = 'Verification code is required';
     else if (formData.verificationCode.length !== 6) newErrors.verificationCode = 'Code must be 6 digits';
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Send verification code (signup)
   const handleSendCode = async () => {
     setIsLoading(true);
     try {
@@ -62,56 +55,41 @@ const Signup = () => {
           password: formData.password
         })
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send verification code');
-      }
-
       setIsLoading(false);
-      setCodeSent(true);
 
-      // Only show demo code if email failed
+      if (!response.ok) throw new Error(data.error || 'Failed to send verification code');
+
       if (data.verificationCode) {
-        alert(`Email failed to send. Demo code: ${data.verificationCode}`);
+        // Email failed, show demo code
+        alert(`Email failed. Demo code: ${data.verificationCode}`);
       } else {
         alert(`Verification code sent to ${formData.email}. Check your inbox.`);
       }
 
+      setStep(2);
     } catch (error) {
       setIsLoading(false);
       setErrors({ email: error.message });
     }
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (step === 1) {
-      if (validateStep1()) {
-        await handleSendCode();
-        setStep(2);
-      }
+      if (validateStep1()) handleSendCode();
       return;
     }
-
-    // Step 2: verify code
     if (validateStep2()) {
       setIsLoading(true);
       try {
         const response = await fetch(`${API_URL}/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            code: formData.verificationCode
-          })
+          body: JSON.stringify({ email: formData.email, code: formData.verificationCode })
         });
-
         const data = await response.json();
-
+        setIsLoading(false);
         if (!response.ok) throw new Error(data.error || 'Verification failed');
 
         login(data.user, data.token);
@@ -124,10 +102,6 @@ const Signup = () => {
     }
   };
 
-  // Go back to step 1
-  const handleBack = () => setStep(1);
-
-  // Resend verification code
   const handleResendCode = async () => {
     setIsLoading(true);
     try {
@@ -136,23 +110,20 @@ const Signup = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
       });
-
       const data = await response.json();
-
+      setIsLoading(false);
       if (!response.ok) throw new Error(data.error || 'Failed to resend code');
 
       if (data.verificationCode) {
-        alert(`Email failed to send. Demo code: ${data.verificationCode}`);
+        alert(`Email failed. Demo code: ${data.verificationCode}`);
       } else {
-        alert('New verification code sent! Check your inbox.');
+        alert(`New verification code sent. Check your inbox.`);
       }
     } catch (error) {
-      setErrors({ verificationCode: error.message });
-    } finally {
       setIsLoading(false);
+      setErrors({ verificationCode: error.message });
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
