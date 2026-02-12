@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../api';
 
@@ -14,37 +14,75 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const validateStep1 = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!formData.verificationCode.trim()) newErrors.verificationCode = 'Verification code is required';
-    else if (formData.verificationCode.length !== 6) newErrors.verificationCode = 'Code must be 6 digits';
+
+    if (!formData.verificationCode.trim()) {
+      newErrors.verificationCode = 'Verification code is required';
+    } else if (formData.verificationCode.length !== 6) {
+      newErrors.verificationCode = 'Code must be 6 digits';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSendCode = async () => {
-    if (!validateStep1()) return;
+    if (!formData.email) {
+      setErrors({ email: 'Email is required to send code' });
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setErrors({ email: 'Please enter a valid email' });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/signup`, {
@@ -56,49 +94,67 @@ const Signup = () => {
           password: formData.password
         })
       });
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to send verification code');
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send verification code');
+      }
 
       setIsLoading(false);
-      setStep(2);
-      alert(`Verification code sent to ${formData.email}. Check your inbox.`);
-      if (data.verificationCode) {
-        console.log(`Demo code (email failed): ${data.verificationCode}`);
-      }
-    } catch (err) {
+      setCodeSent(true);
+      alert(`Verification code sent to ${formData.email}\nFor demo, use: ${data.verificationCode}`);
+    } catch (error) {
       setIsLoading(false);
-      setErrors({ email: err.message });
+      setErrors({ email: error.message });
     }
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (step === 1) {
-      await handleSendCode();
+      if (validateStep1()) {
+        await handleSendCode();
+        setStep(2);
+      }
       return;
     }
-    if (!validateStep2()) return;
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          code: formData.verificationCode
-        })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Verification failed');
+    if (validateStep2()) {
+      setIsLoading(true);
+      
+      try {
+        const response = await fetch(`${API_URL}/verify`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: formData.email,
+    code: formData.verificationCode
+  })
+});
 
-      login(data.user, data.token);
-      alert('Account created successfully!');
-      navigate('/');
-    } catch (err) {
-      setIsLoading(false);
-      setErrors({ verificationCode: err.message });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Verification failed');
+        }
+
+        // Login the user after verification
+        login(data.user, data.token);
+        
+        alert('Account created successfully!');
+        navigate('/');
+      } catch (error) {
+        setIsLoading(false);
+        setErrors({ verificationCode: error.message });
+      }
     }
+  };
+
+  const handleBack = () => {
+    setStep(1);
   };
 
   const handleResendCode = async () => {
@@ -109,13 +165,16 @@ const Signup = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to resend code');
 
-      alert(`New code sent! Check your inbox.`);
-      if (data.verificationCode) console.log(`Demo code (email failed): ${data.verificationCode}`);
-    } catch (err) {
-      setErrors({ verificationCode: err.message });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to resend code');
+      }
+
+      alert(`New code sent! For demo, use: ${data.verificationCode}`);
+    } catch (error) {
+      setErrors({ verificationCode: error.message });
     } finally {
       setIsLoading(false);
     }
